@@ -7,8 +7,16 @@ from dotenv import load_dotenv
 from src.agent import SimpleAgent
 from src.llm import LLMClient
 
+import logging
+from src.logging_config import setup_logging
 
 async def main() -> None:
+    setup_logging(level=logging.DEBUG)
+
+    logger = logging.getLogger("main")
+
+    logger.info("Agent CLI started")
+
     load_dotenv()
 
     goal = input("Objectif: ").strip()

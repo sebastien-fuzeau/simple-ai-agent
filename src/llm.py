@@ -1,12 +1,20 @@
 from __future__ import annotations
 
+import logging
 import os
 from typing import Any, Dict, List, Optional, AsyncGenerator
 
 import httpx
 
+logger = logging.getLogger("llm")
 
 class LLMClient:
+    """
+    Client LLM pour le projet Agent.
+    Supporte deux modes :
+    - real : appel API OpenAI-compatible
+    - mock : réponses simulées (dev / tests / CI)
+    """
     def __init__(
             self,
             api_key: Optional[str] = None,
@@ -31,8 +39,17 @@ class LLMClient:
         timeout_env = os.getenv("REQUEST_TIMEOUT_SECONDS", "30")
         self.timeout_seconds = timeout_seconds if timeout_seconds is not None else float(timeout_env)
 
+        logger.info(
+            "LLM client initialized",
+            extra={"mode": self.mode, "model": self.model},
+        )
+
     async def chat(self, messages: List[Dict[str, Any]]) -> str:
+        logger.info("LLM call started")
+
         if self.mode == "mock":
+            logger.debug("Mock LLM used")
+
             # Simule une réponse “agent”
             last_user = next((m["content"] for m in reversed(messages) if m["role"] == "user"), "")
             return f"[MOCK] Réponse simulée. Dernier message user: {last_user[:120]}"
@@ -49,5 +66,7 @@ class LLMClient:
                 raise RuntimeError("429: quota/rate limit.")
             res.raise_for_status()
             data = res.json()
+
+        logger.info("LLM call finished")
 
         return data["choices"][0]["message"]["content"]
