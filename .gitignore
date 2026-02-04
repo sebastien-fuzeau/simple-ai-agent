@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+.idea/
+.pytest_cache/
+dist/
+build/
+.idea
+src/simple_ai_agent.egg-info
